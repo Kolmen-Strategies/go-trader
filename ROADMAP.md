@@ -1,0 +1,19 @@
+# go-trader roadmap
+
+Based on README claims and code/test review on 2026-11-25 (`b214f23`). Active implementations and exact test results are in [README.md](README.md). These are requirements and validation gaps, without promised dates.
+
+| Priority | Feature / gap | Current evidence | Completion criteria |
+|---|---|---|---|
+| P1 | Live options execution across advertised platforms | `scheduler/main.go` options branch calls simulated `executeOptionsResult`; live chain/quote retrieval is not order execution | Explicit live order dispatch, broker order IDs and fill/account reconciliation for Deribit/IBKR/Robinhood/OKX options; tested sandbox round trips and rejection handling |
+| P1 | Uniform live spot support | Binance US/Luno have data adapters but no live spot dispatch in the scheduler's generic spot branch | Live order adapters wired to scheduler with failure guards, ownership, fee/fill reconciliation and opt-in integration tests |
+| P1 | Live safeguards verified against venues | Local risk/protection/close tests pass using mocks/fixtures; actual stop triggers, partial fills, reconnects and account restrictions were not exercised | Separate paper/testnet acceptance suite per live platform; test failure/restart/idempotency paths before real deployment |
+| P1 | Operator-required closes and same-coin isolation | OKX spot/Robinhood options circuit-breaker paths can require manual action; HL virtual strategies share a net venue position | Demonstrate clear operator alert/recovery, account reconciliation and no false “flat” state; offer isolated subaccount operation where independent strategies are promised |
+| P2 | Complete post-update config walkthrough | Current version is 12; DM field registry only includes version-2/3 prompts, although migrations apply later defaults | Test/operator-visible review for all new risk/mode fields and safe rollback; do not silently imply the DM covers every later setting |
+| P2 | Reproducible backtest/optimization claims | Fixture backtests pass, but live market datasets, optimizer outcomes and profitability were not validated | Versioned datasets, out-of-sample and walk-forward runs, realistic fill/fee assumptions, repeatable reports; label model assumptions |
+| P2 | Complete dependency/runtime setup | Optional IBKR TWS adapter imports `ib_insync` outside direct project dependencies; deployment depends on Python scripts/venv and state paths | Document/install optional dependencies and verify clean-host systemd/multi-instance deployments and restore/reboot behavior |
+| P2 | Notifier and self-update operation | Formatter and updater unit tests pass; no delivery, DM approval, update/rebuild or restart exercised | Credential-gated integration checks using dedicated destinations, including failed update rollback and notification failures |
+| P2 | Comprehensive automated verification | Default pytest excludes `shared_scripts` and options strategy tests; an additional explicit audit run passed 166 tests | Include those paths in CI or document a separate required job; maintain per-platform coverage instead of equating a passing suite with live readiness |
+| P3 | Performance and scale claims | Previous README advertised ~8 MB RAM and 50+ concurrent paper strategies without a reproducible benchmark | Record process-plus-Python memory, strategy count/platform mix, load, latency and failure rates under a versioned benchmark |
+| P3 | Current configuration documentation | Previous README described max-drawdown-derived stop defaults and version-10 config, while source defaults to 1× ATR and version 12 | Keep examples generated from current config and test docs/default parity; retain source links for advanced settings |
+
+No missing functionality was implemented by this documentation audit. Existing tests are evidence only for their actual inputs, mocks and assertions.
